@@ -17,7 +17,21 @@ const commentRoutes = require('./routes/comments')
 const campgroundRoutes = require('./routes/campgrounds')
 const authRoutes = require('./routes/index')
 
-mongoose.connect('mongodb://localhost/yelp_camp', { useNewUrlParser: true })
+// creating default value in case env variable doesn't exist
+const url = process.env.DATABASEURL || 'mongodb://localhost/yelp_camp'
+
+// local db for development AND remote db for production stored in environments DATABASEURL
+mongoose.connect(url, {
+  useNewUrlParser: true,
+  useCreateIndex: true
+}).then(() => {
+  console.log('Connected to DB')
+}).catch(err => {
+  console.log('ERROR', err.message)
+})
+
+
+
 app.use(bodyParser.urlencoded({ extended: true }))
 app.set('view engine', 'ejs')
 app.use(express.static(__dirname + '/public'))  // safe way to use absolute path in case files get moved around
@@ -52,6 +66,6 @@ app.use(authRoutes)
 app.use('/campgrounds', campgroundRoutes)  // uses /campgrounds as base router. So any routes defined in campgrounds is added on to /campgrounds/[additional routes]
 app.use('/campgrounds/:id/comments/', commentRoutes)
 
-app.listen(process.env.PORT || 3000, () => {
+app.listen(process.env.PORT || 3000, process.env.IP, () => {
   console.log('Yelp Camp Server started. Now listening...')
 })
